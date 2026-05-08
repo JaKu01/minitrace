@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"minitrace"
 	"net/http"
 	"time"
+
+	"github.com/JaKu01/minitrace"
 )
 
 func innerInnerFunc(ctx context.Context) string {

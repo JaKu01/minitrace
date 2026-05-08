@@ -1,4 +1,4 @@
-module minitrace
+module github.com/JaKu01/minitrace
 
 go 1.25
 
