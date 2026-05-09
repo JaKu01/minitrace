@@ -1,4 +1,4 @@
-package minitrace
+package trace
 
 import "runtime"
 

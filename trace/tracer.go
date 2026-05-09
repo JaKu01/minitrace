@@ -1,4 +1,4 @@
-package minitrace
+package trace
 
 import (
 	"context"
@@ -11,14 +11,14 @@ import (
 var Spans []*Span
 var serverStarted = atomic.Bool{}
 
-func ensureServerStarted() {
+func EnsureServerStarted() {
 	if serverStarted.CompareAndSwap(false, true) {
 		go serveHttp()
 	}
 }
 
 func Start(ctx context.Context) (*Span, context.Context) {
-	ensureServerStarted()
+	EnsureServerStarted()
 
 	parentID := "root"
 
