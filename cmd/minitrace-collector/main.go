@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/JaKu01/minitrace/collector"
-	"github.com/JaKu01/minitrace/trace"
+	"github.com/JaKu01/minitrace/internal/trace"
 )
 
 func innerInnerFunc(ctx context.Context) string {

@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/JaKu01/minitrace/trace"
+	"github.com/JaKu01/minitrace/internal/api"
+	"github.com/JaKu01/minitrace/internal/trace"
 )
 
 type Collector struct {
@@ -15,7 +16,7 @@ type Collector struct {
 
 type CollectionResult struct {
 	url      string
-	response trace.SpanApiResponse
+	response api.SpanApiResponse
 }
 
 func NewCollector(urls []string) (*Collector, error) {
@@ -54,14 +55,14 @@ func (c *Collector) CollectTraces() []CollectionResult {
 	return collectionResults
 }
 
-func collectAtUrl(url string) (trace.SpanApiResponse, error) {
+func collectAtUrl(url string) (api.SpanApiResponse, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return trace.SpanApiResponse{}, err
+		return api.SpanApiResponse{}, err
 	}
 	defer resp.Body.Close()
 
-	var collectionResponseBody trace.SpanApiResponse
+	var collectionResponseBody api.SpanApiResponse
 	err = json.NewDecoder(resp.Body).Decode(&collectionResponseBody)
 	return collectionResponseBody, err
 }

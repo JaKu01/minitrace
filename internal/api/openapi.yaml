@@ -1,0 +1,58 @@
+openapi: 3.0.3
+info:
+  title: Span API
+  version: 1.0.0
+
+paths:
+  /api/traces:
+    get:
+      operationId: getTraces
+      responses:
+        "200":
+          description: Span
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpanApiResponse"
+        "500":
+          description: Error when fetching spans
+
+components:
+  schemas:
+    SpanApiResponse:
+      type: object
+      required:
+        - children
+      properties:
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpanDTO"
+    SpanDTO:
+      type: object
+      required:
+        - id
+        - children
+        - name
+        - startTime
+        - endTime
+        - duration
+      properties:
+        id:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpanDTO"
+        name:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          format: int64
+          description: Duration in nanoseconds

@@ -4,13 +4,20 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"time"
+
+	"github.com/JaKu01/minitrace/internal/api"
 )
 
-func buildTree(spans []*Span) SpanApiResponse {
+func buildTree(spans []*Span, lastFetchedTimestamp time.Time) api.SpanApiResponse {
 
-	rootChildren := make([]Span, 0)
-
+	var rootChildren []Span
+	useTimestampFilter := lastFetchedTimestamp.IsZero()
 	for _, span := range spans {
+		if useTimestampFilter && span.StartTime.Before(lastFetchedTimestamp) {
+			continue
+		}
+
 		if span.ParentID == "root" {
 			rootChildren = append(rootChildren, *span)
 		}
@@ -18,30 +25,30 @@ func buildTree(spans []*Span) SpanApiResponse {
 
 	childrenByParentID := buildChildrenByParentIDMap(spans)
 
-	var rootChildDtos []SpanDTO
+	var rootChildDtos []api.SpanDTO
 	for _, rootChild := range rootChildren {
 		rootChildDtos = append(rootChildDtos, getChildrenRecursive(childrenByParentID, rootChild))
 	}
 
-	return SpanApiResponse{
+	return api.SpanApiResponse{
 		Children: rootChildDtos,
 	}
 }
 
-func getChildrenRecursive(childrenByParentID map[string][]*Span, span Span) SpanDTO {
+func getChildrenRecursive(childrenByParentID map[string][]*Span, span Span) api.SpanDTO {
 	children := childrenByParentID[span.ID]
 
-	childDtos := make([]SpanDTO, 0)
+	childDtos := make([]api.SpanDTO, 0)
 	for _, child := range children {
 		childDtos = append(childDtos, getChildrenRecursive(childrenByParentID, *child))
 	}
 
-	return SpanDTO{
-		ID:        span.ID,
+	return api.SpanDTO{
+		Id:        span.ID,
 		Name:      span.Name,
 		StartTime: span.StartTime,
 		EndTime:   span.EndTime,
-		Duration:  span.Duration,
+		Duration:  int64(span.Duration),
 		Children:  childDtos,
 	}
 }
@@ -61,7 +68,7 @@ func serveHttp() {
 
 	mux.HandleFunc("GET /api/traces", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		err := json.NewEncoder(w).Encode(buildTree(Spans))
+		err := json.NewEncoder(w).Encode(buildTree(Spans, time.Time{}))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
