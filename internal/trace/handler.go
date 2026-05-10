@@ -36,7 +36,7 @@ func buildTree(spans []*Span, lastFetchedTimestamp time.Time) []api.SpanDTO {
 func getChildrenRecursive(childrenByParentID map[string][]*Span, span Span) api.SpanDTO {
 	children := childrenByParentID[span.ID]
 
-	var childDtos []api.SpanDTO
+	childDtos := make([]api.SpanDTO, 0)
 	for _, child := range children {
 		childDtos = append(childDtos, getChildrenRecursive(childrenByParentID, *child))
 	}
