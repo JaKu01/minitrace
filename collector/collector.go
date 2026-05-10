@@ -16,7 +16,7 @@ type Collector struct {
 
 type CollectionResult struct {
 	url      string
-	response api.SpanApiResponse
+	response []api.SpanDTO
 }
 
 func NewCollector(urls []string) (*Collector, error) {
@@ -55,14 +55,14 @@ func (c *Collector) CollectTraces() []CollectionResult {
 	return collectionResults
 }
 
-func collectAtUrl(url string) (api.SpanApiResponse, error) {
+func collectAtUrl(url string) ([]api.SpanDTO, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return api.SpanApiResponse{}, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	var collectionResponseBody api.SpanApiResponse
+	var collectionResponseBody []api.SpanDTO
 	err = json.NewDecoder(resp.Body).Decode(&collectionResponseBody)
 	return collectionResponseBody, err
 }

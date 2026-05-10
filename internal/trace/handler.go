@@ -9,7 +9,7 @@ import (
 	"github.com/JaKu01/minitrace/internal/api"
 )
 
-func buildTree(spans []*Span, lastFetchedTimestamp time.Time) api.SpanApiResponse {
+func buildTree(spans []*Span, lastFetchedTimestamp time.Time) []api.SpanDTO {
 
 	var rootChildren []Span
 	useTimestampFilter := lastFetchedTimestamp.IsZero()
@@ -30,15 +30,13 @@ func buildTree(spans []*Span, lastFetchedTimestamp time.Time) api.SpanApiRespons
 		rootChildDtos = append(rootChildDtos, getChildrenRecursive(childrenByParentID, rootChild))
 	}
 
-	return api.SpanApiResponse{
-		Children: rootChildDtos,
-	}
+	return rootChildDtos
 }
 
 func getChildrenRecursive(childrenByParentID map[string][]*Span, span Span) api.SpanDTO {
 	children := childrenByParentID[span.ID]
 
-	childDtos := make([]api.SpanDTO, 0)
+	var childDtos []api.SpanDTO
 	for _, child := range children {
 		childDtos = append(childDtos, getChildrenRecursive(childrenByParentID, *child))
 	}

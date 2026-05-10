@@ -7,11 +7,6 @@ import (
 	"time"
 )
 
-// SpanApiResponse defines model for SpanApiResponse.
-type SpanApiResponse struct {
-	Children []SpanDTO `json:"children"`
-}
-
 // SpanDTO defines model for SpanDTO.
 type SpanDTO struct {
 	Children []SpanDTO `json:"children"`

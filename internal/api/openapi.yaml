@@ -13,21 +13,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SpanApiResponse"
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpanDTO"
         "500":
           description: Error when fetching spans
 
 components:
   schemas:
-    SpanApiResponse:
-      type: object
-      required:
-        - children
-      properties:
-        children:
-          type: array
-          items:
-            $ref: "#/components/schemas/SpanDTO"
     SpanDTO:
       type: object
       required:
