@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: Span API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+paths:
+  /api/traces:
+    get:
+      tags:
+        - Traces
+      operationId: getTraces
+      responses:
+        "200":
+          description: Span
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpanDTO"
+        "500":
+          description: Error when fetching spans
+  /api/traces/{timestamp}:
+    get:
+      tags:
+        - Traces
+      parameters:
+        - name: timestamp
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      operationId: getTracesAfterTimestamp
+      responses:
+        "200":
+          description: Get spans after timestamp
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpanDTO"
+
+components:
+  schemas:
+    SpanDTO:
+      type: object
+      required:
+        - id
+        - children
+        - name
+        - startTime
+        - endTime
+        - duration
+      properties:
+        id:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpanDTO"
+        name:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          format: int64
+          description: Duration in nanoseconds
