@@ -9,6 +9,24 @@ import (
 	"github.com/JaKu01/minitrace/internal/api"
 )
 
+type Handler struct{}
+
+func (h *Handler) GetTracesAfterTimestamp(w http.ResponseWriter, r *http.Request, timestamp int64) {
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(buildTree(Spans, time.Unix(timestamp, 0)))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) GetTraces(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(buildTree(Spans, time.Time{}))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
 func buildTree(spans []*Span, lastFetchedTimestamp time.Time) []api.SpanDTO {
 
 	var rootChildren []Span
@@ -61,18 +79,34 @@ func buildChildrenByParentIDMap(spans []*Span) map[string][]*Span {
 	return childrenByParentID
 }
 
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set(
+			"Access-Control-Allow-Methods",
+			"GET, POST, OPTIONS, PUT, DELETE",
+		)
+		w.Header().Set(
+			"Access-Control-Allow-Headers",
+			"Content-Type, Authorization",
+		)
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func serveHttp() {
+
+	handler := &Handler{}
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /api/traces", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		err := json.NewEncoder(w).Encode(buildTree(Spans, time.Time{}))
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-	})
+	api.HandlerFromMux(handler, mux)
 
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := http.ListenAndServe(":8080", corsMiddleware(mux)); err != nil {
 		slog.Error("Failed to start http server", "err", err.Error())
 	}
 }
