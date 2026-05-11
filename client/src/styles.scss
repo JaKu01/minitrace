@@ -1,0 +1,10 @@
+@use './colors' as colors;
+
+html, body, app-root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  font-family: monospace;
+  background-color: colors.$color-background;
+}

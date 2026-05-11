@@ -1,0 +1,14 @@
+<div class="wrapper">
+  @for (entry of traces() | keyvalue; track entry.key) {
+    <div class="trace-entry">
+      <h3>{{ entry.key }}</h3>
+
+      @for (trace of entry.value; track trace.name) {
+        <div [style.width.%]="trace.lengthInPercent" class="bar">
+          {{ trace.name }} - {{ trace.durationInSeconds }}s
+        </div>
+      }
+    </div>
+  }
+</div>
+
