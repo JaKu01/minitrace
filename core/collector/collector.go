@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/JaKu01/minitrace/core/internal/api"
+	"github.com/JaKu01/minitrace/core/api"
 	"github.com/JaKu01/minitrace/core/trace"
 )
 
