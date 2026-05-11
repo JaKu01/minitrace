@@ -67,7 +67,7 @@ func (siw *ServerInterfaceWrapper) GetTracesAfterTimestamp(w http.ResponseWriter
 	// ------------- Path parameter "timestamp" -------------
 	var timestamp int64
 
-	err = runtime.BindStyledParameterWithOptions("simple", "timestamp", r.PathValue("timestamp"), &timestamp, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: false, Type: "integer", Format: "int64"})
+	err = runtime.BindStyledParameterWithOptions("simple", "timestamp", r.PathValue("timestamp"), &timestamp, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "int64"})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "timestamp", Err: err})
 		return

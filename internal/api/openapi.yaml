@@ -27,6 +27,7 @@ paths:
       parameters:
         - name: timestamp
           in: path
+          required: true
           schema:
             type: integer
             format: int64
