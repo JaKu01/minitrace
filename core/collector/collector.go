@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/JaKu01/minitrace/internal/api"
-	"github.com/JaKu01/minitrace/internal/trace"
+	"github.com/JaKu01/minitrace/core/internal/api"
+	"github.com/JaKu01/minitrace/core/internal/trace"
 )
 
 type Collector struct {

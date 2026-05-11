@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/JaKu01/minitrace/internal/api"
+	"github.com/JaKu01/minitrace/core/internal/api"
 )
 
 type Handler struct{}
