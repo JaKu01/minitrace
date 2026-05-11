@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/JaKu01/minitrace/core/internal/api"
-	"github.com/JaKu01/minitrace/core/internal/trace"
+	"github.com/JaKu01/minitrace/core/trace"
 )
 
 type Collector struct {
