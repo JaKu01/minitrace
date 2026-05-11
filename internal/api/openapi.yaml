@@ -10,6 +10,8 @@ servers:
 paths:
   /api/traces:
     get:
+      tags:
+        - Traces
       operationId: getTraces
       responses:
         "200":
@@ -24,6 +26,8 @@ paths:
           description: Error when fetching spans
   /api/traces/{timestamp}:
     get:
+      tags:
+        - Traces
       parameters:
         - name: timestamp
           in: path
