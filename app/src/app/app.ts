@@ -6,6 +6,7 @@ import { ApiService, TraceDetail, TraceFilters, TraceSpan, TraceSummary } from '
 
 interface TimelineSpan extends TraceSpan {
   depth: number;
+  hasChildren: boolean;
   offsetPercent: number;
   widthPercent: number;
   durationNano: number;
@@ -30,6 +31,7 @@ export class App {
   readonly error = signal('');
   readonly lastUpdated = signal<Date | null>(null);
   readonly filters = signal<TraceFilters>({ service: '', query: '', errorsOnly: false });
+  readonly collapsedSpans = signal<ReadonlySet<string>>(new Set());
 
   readonly timeline = computed<TimelineSpan[]>(() => {
     const trace = this.selectedTrace();
@@ -39,6 +41,8 @@ export class App {
     const end = Math.max(...trace.spans.map(span => Date.parse(span.endTime)));
     const total = Math.max(end - start, 0.01);
     const byId = new Map(trace.spans.map(span => [span.spanId, span]));
+    const parentIds = new Set(trace.spans.map(span => span.parentSpanId).filter(Boolean));
+    const collapsed = this.collapsedSpans();
 
     const depthOf = (span: TraceSpan): number => {
       let depth = 0;
@@ -52,12 +56,24 @@ export class App {
       return depth;
     };
 
-    return trace.spans.map(span => {
+    const isHidden = (span: TraceSpan): boolean => {
+      let parentId = span.parentSpanId;
+      const visited = new Set<string>();
+      while (parentId && byId.has(parentId) && !visited.has(parentId)) {
+        if (collapsed.has(parentId)) return true;
+        visited.add(parentId);
+        parentId = byId.get(parentId)?.parentSpanId;
+      }
+      return false;
+    };
+
+    return trace.spans.filter(span => !isHidden(span)).map(span => {
       const spanStart = Date.parse(span.startTime);
       const spanEnd = Date.parse(span.endTime);
       return {
         ...span,
         depth: depthOf(span),
+        hasChildren: parentIds.has(span.spanId),
         offsetPercent: Math.max(0, ((spanStart - start) / total) * 100),
         widthPercent: Math.max(0.6, ((spanEnd - spanStart) / total) * 100),
         durationNano: Math.max(0, (spanEnd - spanStart) * 1_000_000)
@@ -105,6 +121,7 @@ export class App {
   openTrace(summary: TraceSummary): void {
     this.detailLoading.set(true);
     this.selectedSpan.set(null);
+    this.collapsedSpans.set(new Set());
     this.api.trace(summary.traceId).pipe(
       finalize(() => this.detailLoading.set(false))
     ).subscribe({
@@ -115,6 +132,22 @@ export class App {
 
   selectSpan(span: TraceSpan): void {
     this.selectedSpan.set(span);
+  }
+
+  toggleSpan(spanId: string): void {
+    this.collapsedSpans.update(current => {
+      const next = new Set(current);
+      if (next.has(spanId)) {
+        next.delete(spanId);
+      } else {
+        next.add(spanId);
+      }
+      return next;
+    });
+  }
+
+  isCollapsed(spanId: string): boolean {
+    return this.collapsedSpans().has(spanId);
   }
 
   formatDuration(nanoseconds: number): string {

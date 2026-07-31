@@ -91,50 +91,7 @@
 main {
   max-width: 1540px;
   margin: 0 auto;
-  padding: 42px clamp(20px, 4vw, 64px) 64px;
-}
-
-.intro {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 32px;
-}
-
-.eyebrow {
-  color: #8e97a5;
-  font-size: 12px;
-  letter-spacing: normal;
-  margin: 0 0 10px;
-}
-
-h1 {
-  font-size: clamp(32px, 4vw, 48px);
-  line-height: 1.12;
-  letter-spacing: normal;
-  margin: 0;
-  font-weight: 600;
-}
-
-h1 span {
-  color: #9aa3af;
-}
-
-.metric {
-  text-align: right;
-  padding-bottom: 4px;
-}
-
-.metric strong {
-  display: block;
-  color: #8faed2;
-  font-size: 34px;
-  letter-spacing: normal;
-}
-
-.metric span {
-  color: #7f8793;
-  font-size: 12px;
+  padding: 24px clamp(20px, 4vw, 64px) 64px;
 }
 
 .filters {
@@ -367,7 +324,6 @@ h2 {
   background: transparent;
   border: 0;
   border-bottom: 1px solid #252b33;
-  cursor: pointer;
 }
 
 .span-row:hover,
@@ -375,12 +331,61 @@ h2 {
   background: #1c2128;
 }
 
+.span-name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.disclosure,
+.disclosure-spacer {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 28px;
+  margin-right: 4px;
+}
+
+.disclosure {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #8f98a5;
+  cursor: pointer;
+}
+
+.disclosure:hover {
+  color: #d7dce4;
+  background: #292f38;
+}
+
+.chevron {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 120ms ease;
+}
+
+.chevron.collapsed {
+  transform: rotate(-45deg);
+}
+
 .span-label {
   display: flex;
   align-items: center;
   min-width: 0;
   gap: 9px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
   text-align: left;
+  cursor: pointer;
 }
 
 .span-label i {
@@ -416,10 +421,17 @@ h2 {
 
 .track {
   position: relative;
+  display: block;
+  width: 100%;
   height: 20px;
+  padding: 0;
   border-left: 1px solid #303641;
   border-right: 1px solid #303641;
+  border-top: 0;
+  border-bottom: 0;
+  background-color: transparent;
   background-image: linear-gradient(to right, transparent 24.8%, #282e37 25%, transparent 25.2%, transparent 49.8%, #282e37 50%, transparent 50.2%, transparent 74.8%, #282e37 75%, transparent 75.2%);
+  cursor: pointer;
 }
 
 .span-bar {
@@ -578,11 +590,6 @@ dd {
 }
 
 @media (max-width: 900px) {
-  .intro {
-    align-items: flex-start;
-  }
-
-  .metric,
   .updated {
     display: none;
   }
@@ -604,11 +611,7 @@ dd {
   }
 
   main {
-    padding-top: 34px;
-  }
-
-  .intro {
-    margin-bottom: 28px;
+    padding-top: 20px;
   }
 
   .filters {

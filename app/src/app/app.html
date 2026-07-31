@@ -17,17 +17,6 @@
   </header>
 
   <main>
-    <section class="intro">
-      <div>
-        <p class="eyebrow">Distributed tracing</p>
-        <h1>Trace system behavior<br><span>across every request.</span></h1>
-      </div>
-      <div class="metric">
-        <strong>{{ traces().length }}</strong>
-        <span>Traces in current view</span>
-      </div>
-    </section>
-
     <section class="filters" aria-label="Trace filters">
       <label class="search">
         <span aria-hidden="true">⌕</span>
@@ -125,28 +114,40 @@
 
           <div class="waterfall">
             @for (span of timeline(); track span.spanId) {
-              <button
+              <div
                 class="span-row"
-                [class.selected]="selectedSpan()?.spanId === span.spanId"
-                type="button"
-                (click)="selectSpan(span)">
-                <span class="span-label" [style.padding-left.px]="span.depth * 16">
-                  <i [class.error]="span.status === 'error'"></i>
-                  <span>
-                    <strong>{{ span.name }}</strong>
-                    <small>{{ span.serviceName }}</small>
-                  </span>
+                [class.selected]="selectedSpan()?.spanId === span.spanId">
+                <span class="span-name" [style.padding-left.px]="span.depth * 16">
+                  @if (span.hasChildren) {
+                    <button
+                      class="disclosure"
+                      type="button"
+                      [attr.aria-expanded]="!isCollapsed(span.spanId)"
+                      [attr.aria-label]="(isCollapsed(span.spanId) ? 'Expand ' : 'Collapse ') + span.name"
+                      (click)="toggleSpan(span.spanId)">
+                      <span class="chevron" [class.collapsed]="isCollapsed(span.spanId)" aria-hidden="true"></span>
+                    </button>
+                  } @else {
+                    <span class="disclosure-spacer"></span>
+                  }
+                  <button class="span-label" type="button" (click)="selectSpan(span)">
+                    <i [class.error]="span.status === 'error'"></i>
+                    <span>
+                      <strong>{{ span.name }}</strong>
+                      <small>{{ span.serviceName }}</small>
+                    </span>
+                  </button>
                 </span>
-                <span class="track">
+                <button class="track" type="button" (click)="selectSpan(span)" [attr.aria-label]="'Inspect ' + span.name">
                   <span
                     class="span-bar"
                     [class.error]="span.status === 'error'"
                     [style.left.%]="span.offsetPercent"
                     [style.width.%]="span.widthPercent">
                   </span>
-                </span>
+                </button>
                 <span class="span-time">{{ formatDuration(span.durationNano) }}</span>
-              </button>
+              </div>
             }
           </div>
 
