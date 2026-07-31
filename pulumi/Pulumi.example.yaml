@@ -1,0 +1,5 @@
+config:
+  kubernetes:context: your-context
+  minitrace:hostname: traces.example.com
+  minitrace:storageSize: 2Gi
+  minitrace:retentionHours: 24

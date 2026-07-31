@@ -1,0 +1,3 @@
+name: minitrace
+runtime: nodejs
+description: Lightweight tracing server for kurth.dev

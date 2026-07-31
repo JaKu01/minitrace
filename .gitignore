@@ -38,3 +38,7 @@
 **/.DS_Store
 **/Thumbs.db
 
+# Runtime data and local Pulumi state
+*.db
+pulumi/Pulumi.*.yaml
+!pulumi/Pulumi.example.yaml

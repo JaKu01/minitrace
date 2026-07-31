@@ -1,0 +1,187 @@
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Minitrace start">
+      <span class="brand-mark" aria-hidden="true">m</span>
+      <span>minitrace</span>
+    </a>
+    <div class="retention-pill">
+      <span class="pulse"></span>
+      Live · 24 hour retention
+    </div>
+    <div class="topbar-actions">
+      @if (lastUpdated()) {
+        <span class="updated">Updated {{ lastUpdated() | date:'HH:mm:ss' }}</span>
+      }
+      <button class="icon-button" type="button" (click)="refresh()" aria-label="Refresh traces">↻</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div>
+        <p class="eyebrow">Distributed tracing</p>
+        <h1>Trace system behavior<br><span>across every request.</span></h1>
+      </div>
+      <div class="metric">
+        <strong>{{ traces().length }}</strong>
+        <span>Traces in current view</span>
+      </div>
+    </section>
+
+    <section class="filters" aria-label="Trace filters">
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input
+          type="search"
+          placeholder="Search operations…"
+          [ngModel]="filters().query"
+          (ngModelChange)="updateFilter({ query: $event })">
+      </label>
+      <label>
+        <span class="sr-only">Select service</span>
+        <select [ngModel]="filters().service" (ngModelChange)="updateFilter({ service: $event })">
+          <option value="">All services</option>
+          @for (service of services(); track service) {
+            <option [value]="service">{{ service }}</option>
+          }
+        </select>
+      </label>
+      <label class="error-toggle">
+        <input
+          type="checkbox"
+          [ngModel]="filters().errorsOnly"
+          (ngModelChange)="updateFilter({ errorsOnly: $event })">
+        <span>Errors only</span>
+      </label>
+    </section>
+
+    @if (error()) {
+      <div class="notice">{{ error() }}</div>
+    }
+
+    <section class="workspace">
+      <aside class="trace-list" aria-label="Traces">
+        <div class="panel-heading">
+          <span>Recent traces</span>
+          <span>{{ traces().length }}</span>
+        </div>
+
+        @if (loading() && !traces().length) {
+          @for (item of [1, 2, 3, 4]; track item) {
+            <div class="trace-card skeleton"></div>
+          }
+        } @else if (!traces().length) {
+          <div class="empty">
+            <span>∅</span>
+            <strong>No traces available</strong>
+            <p>Start an instrumented service. New traces will appear automatically.</p>
+          </div>
+        } @else {
+          @for (trace of traces(); track trace.traceId) {
+            <button
+              class="trace-card"
+              [class.active]="selectedTrace()?.traceId === trace.traceId"
+              type="button"
+              (click)="openTrace(trace)">
+              <div class="trace-card-top">
+                <span class="status-dot" [class.error]="trace.status === 'error'"></span>
+                <span class="operation">{{ trace.name }}</span>
+                <strong>{{ formatDuration(trace.durationNano) }}</strong>
+              </div>
+              <div class="trace-meta">
+                <span class="service-tag">{{ trace.serviceName }}</span>
+                <span>{{ trace.spanCount }} Spans</span>
+                <span>{{ trace.startTime | date:'HH:mm:ss.SSS' }}</span>
+              </div>
+            </button>
+          }
+        }
+      </aside>
+
+      <section class="detail-panel" aria-label="Trace details">
+        @if (detailLoading()) {
+          <div class="detail-empty">Loading trace…</div>
+        } @else if (selectedTrace(); as trace) {
+          <div class="detail-header">
+            <div>
+              <div class="breadcrumb">
+                Trace <span>/</span> {{ shortId(trace.traceId) }}
+              </div>
+              <h2>{{ timeline()[0]?.name || 'Trace' }}</h2>
+            </div>
+            <div class="duration">
+              <span>Total duration</span>
+              <strong>{{ formatDuration(trace.durationNano) }}</strong>
+            </div>
+          </div>
+
+          <div class="timeline-scale" aria-hidden="true">
+            <span>0</span>
+            <span>25%</span>
+            <span>50%</span>
+            <span>75%</span>
+            <span>{{ formatDuration(trace.durationNano) }}</span>
+          </div>
+
+          <div class="waterfall">
+            @for (span of timeline(); track span.spanId) {
+              <button
+                class="span-row"
+                [class.selected]="selectedSpan()?.spanId === span.spanId"
+                type="button"
+                (click)="selectSpan(span)">
+                <span class="span-label" [style.padding-left.px]="span.depth * 16">
+                  <i [class.error]="span.status === 'error'"></i>
+                  <span>
+                    <strong>{{ span.name }}</strong>
+                    <small>{{ span.serviceName }}</small>
+                  </span>
+                </span>
+                <span class="track">
+                  <span
+                    class="span-bar"
+                    [class.error]="span.status === 'error'"
+                    [style.left.%]="span.offsetPercent"
+                    [style.width.%]="span.widthPercent">
+                  </span>
+                </span>
+                <span class="span-time">{{ formatDuration(span.durationNano) }}</span>
+              </button>
+            }
+          </div>
+
+          @if (selectedSpan(); as span) {
+            <div class="inspector">
+              <div class="inspector-heading">
+                <div>
+                  <span>Span</span>
+                  <strong>{{ span.name }}</strong>
+                </div>
+                <button type="button" (click)="selectedSpan.set(null)" aria-label="Close span details">×</button>
+              </div>
+              <dl class="facts">
+                <div><dt>Service</dt><dd>{{ span.serviceName }}</dd></div>
+                <div><dt>Span ID</dt><dd>{{ span.spanId }}</dd></div>
+                <div><dt>Status</dt><dd [class.error-text]="span.status === 'error'">{{ span.status }}</dd></div>
+              </dl>
+              @if (attributeEntries(span).length) {
+                <h3>Attributes</h3>
+                <dl class="attributes">
+                  @for (attribute of attributeEntries(span); track attribute[0]) {
+                    <div><dt>{{ attribute[0] }}</dt><dd>{{ attribute[1] | json }}</dd></div>
+                  }
+                </dl>
+              }
+            </div>
+          }
+        } @else {
+          <div class="detail-empty">
+            <span class="empty-mark">m</span>
+            <strong>Select a trace</strong>
+            <p>Inspect timing, concurrency, errors, and slow spans in one view.</p>
+          </div>
+        }
+      </section>
+    </section>
+  </main>
+</div>
