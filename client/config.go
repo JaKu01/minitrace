@@ -38,7 +38,12 @@ func (c Config) withDefaults() Config {
 		c.QueueSize = defaultQueueSize
 	}
 	if c.HTTPClient == nil {
-		c.HTTPClient = &http.Client{Timeout: 3 * time.Second}
+		// Pin the current transport so a later application-level wrapper around
+		// http.DefaultTransport cannot trace the exporter's own requests.
+		c.HTTPClient = &http.Client{
+			Timeout:   3 * time.Second,
+			Transport: http.DefaultTransport,
+		}
 	}
 	if c.Logger == nil {
 		c.Logger = slog.Default()
