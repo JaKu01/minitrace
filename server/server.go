@@ -97,7 +97,11 @@ func (s *Server) listTraces(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getTrace(w http.ResponseWriter, r *http.Request) {
-	trace, err := s.store.GetTrace(r.Context(), r.PathValue("traceID"))
+	trace, err := s.store.GetTrace(
+		r.Context(),
+		r.PathValue("traceID"),
+		strings.TrimSpace(r.URL.Query().Get("service")),
+	)
 	if errors.Is(err, ErrTraceNotFound) {
 		writeError(w, http.StatusNotFound, "trace not found")
 		return

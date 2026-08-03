@@ -21,6 +21,7 @@ interface TimelineSpan extends TraceSpan {
 export class App {
   private readonly api = inject(ApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private detailRequestId = 0;
 
   readonly traces = signal<TraceSummary[]>([]);
   readonly services = signal<string[]>([]);
@@ -114,19 +115,35 @@ export class App {
   }
 
   updateFilter(patch: Partial<TraceFilters>): void {
+    const serviceChanged = patch.service !== undefined && patch.service !== this.filters().service;
     this.filters.update(current => ({ ...current, ...patch }));
+    if (serviceChanged) {
+      this.detailRequestId++;
+      this.detailLoading.set(false);
+      this.selectedTrace.set(null);
+      this.selectedSpan.set(null);
+      this.collapsedSpans.set(new Set());
+    }
     this.refresh();
   }
 
   openTrace(summary: TraceSummary): void {
+    const requestId = ++this.detailRequestId;
+    const service = this.filters().service;
     this.detailLoading.set(true);
     this.selectedSpan.set(null);
     this.collapsedSpans.set(new Set());
-    this.api.trace(summary.traceId).pipe(
-      finalize(() => this.detailLoading.set(false))
+    this.api.trace(summary.traceId, service).pipe(
+      finalize(() => {
+        if (requestId === this.detailRequestId) this.detailLoading.set(false);
+      })
     ).subscribe({
-      next: trace => this.selectedTrace.set(trace),
-      error: () => this.error.set('The trace could not be loaded.')
+      next: trace => {
+        if (requestId === this.detailRequestId) this.selectedTrace.set(trace);
+      },
+      error: () => {
+        if (requestId === this.detailRequestId) this.error.set('The trace could not be loaded.');
+      }
     });
   }
 

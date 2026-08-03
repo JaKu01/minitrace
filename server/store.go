@@ -225,13 +225,18 @@ LIMIT ?`, args...)
 	return traces, rows.Err()
 }
 
-func (s *Store) GetTrace(ctx context.Context, traceID string) (TraceDetail, error) {
+func (s *Store) GetTrace(ctx context.Context, traceID, service string) (TraceDetail, error) {
 	rows, err := s.db.QueryContext(ctx, `
 SELECT trace_id, span_id, parent_span_id, service_name, name,
        start_time, end_time, status, attributes_json, events_json
 FROM spans
-WHERE trace_id = ? AND start_time >= ?
-ORDER BY start_time ASC`, traceID, time.Now().Add(-s.retention).UnixNano())
+WHERE trace_id = ? AND start_time >= ? AND (? = '' OR service_name = ?)
+ORDER BY start_time ASC`,
+		traceID,
+		time.Now().Add(-s.retention).UnixNano(),
+		service,
+		service,
+	)
 	if err != nil {
 		return TraceDetail{}, err
 	}

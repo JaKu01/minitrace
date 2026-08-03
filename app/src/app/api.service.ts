@@ -55,8 +55,10 @@ export class ApiService {
     return this.http.get<TraceSummary[]>('/api/v1/traces', { params });
   }
 
-  trace(traceId: string): Observable<TraceDetail> {
-    return this.http.get<TraceDetail>(`/api/v1/traces/${encodeURIComponent(traceId)}`);
+  trace(traceId: string, service = ''): Observable<TraceDetail> {
+    let params = new HttpParams();
+    if (service) params = params.set('service', service);
+    return this.http.get<TraceDetail>(`/api/v1/traces/${encodeURIComponent(traceId)}`, { params });
   }
 
   services(): Observable<string[]> {
